@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByteHackr Tools | Pentesting & Security Toolkit</title>
+    <meta name="description" content="A comprehensive collection of client-side security and pentesting tools. Hash, encode, decode, analyze - all in your browser.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas id="matrix-bg"></canvas>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo" onclick="showSection('home')">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">BYTE<span class="accent">HACKR</span></span>
+            </a>
+            <nav class="nav">
+                <button class="nav-toggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-menu">
+                    <li><a href="#" onclick="showSection('hash')" data-section="hash">Hashing</a></li>
+                    <li><a href="#" onclick="showSection('jwt')" data-section="jwt">JWT</a></li>
+                    <li><a href="#" onclick="showSection('regex')" data-section="regex">Regex</a></li>
+                    <li><a href="#" onclick="showSection('json')" data-section="json">JSON/YAML</a></li>
+                    <li><a href="#" onclick="showSection('hex')" data-section="hex">Hex Viewer</a></li>
+                    <li><a href="#" onclick="showSection('checksum')" data-section="checksum">Checksum</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <div class="hero-content">
+                    <h1 class="glitch" data-text="BYTEHACKR TOOLS">BYTEHACKR TOOLS</h1>
+                    <p class="hero-subtitle">Client-side security toolkit for hackers, pentesters & developers</p>
+                    <p class="hero-desc">All tools run entirely in your browser. No data leaves your machine.</p>
+                </div>
+            </div>
+            
+            <div class="tools-grid">
+                <div class="tool-card" onclick="showSection('hash')">
+                    <div class="tool-icon">🔐</div>
+                    <h3>Hashing & Encoding</h3>
+                    <p>SHA1/256/512, MD5, HMAC, Base64, Hex, URL encoding with file support</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+                
+                <div class="tool-card" onclick="showSection('jwt')">
+                    <div class="tool-icon">🎫</div>
+                    <h3>JWT Inspector</h3>
+                    <p>Decode, inspect, and verify JSON Web Tokens with signature validation</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+                
+                <div class="tool-card" onclick="showSection('regex')">
+                    <div class="tool-icon">🔍</div>
+                    <h3>Regex Tester</h3>
+                    <p>Test patterns, visualize matches, groups, and get instant explanations</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+                
+                <div class="tool-card" onclick="showSection('json')">
+                    <div class="tool-icon">📋</div>
+                    <h3>JSON/YAML Converter</h3>
+                    <p>Convert, validate, prettify, and minify with schema validation</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+                
+                <div class="tool-card" onclick="showSection('hex')">
+                    <div class="tool-icon">💾</div>
+                    <h3>Hex Viewer</h3>
+                    <p>Binary analysis with hex dump, ASCII view, and signature detection</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+                
+                <div class="tool-card" onclick="showSection('checksum')">
+                    <div class="tool-icon">✅</div>
+                    <h3>Checksum Lookup</h3>
+                    <p>Verify file integrity with local database and optional external lookups</p>
+                    <span class="tool-arrow">→</span>
+                </div>
+            </div>
+            
+            <div class="security-notice">
+                <span class="notice-icon">🛡️</span>
+                <span>100% Client-Side • Zero Data Collection • Open Source</span>
+            </div>
+        </section>
+
+        <!-- Hashing & Encoding Section -->
+        <section id="hash" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Hashing & Encoding Toolkit</h2>
+                <p>Generate hashes, encode/decode data in various formats</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchHashTab('text')">Text Input</button>
+                    <button class="tab" onclick="switchHashTab('file')">File Hash</button>
+                </div>
+                
+                <div id="hash-text-tab" class="tab-content active">
+                    <div class="input-group">
+                        <label>Input Text</label>
+                        <textarea id="hash-input" placeholder="Enter text to hash or encode..." rows="4"></textarea>
+                    </div>
+                    
+                    <div class="encoding-options">
+                        <div class="option-group">
+                            <label>Hash Algorithms</label>
+                            <div class="btn-group">
+                                <button class="btn btn-sm" onclick="computeHash('MD5')">MD5</button>
+                                <button class="btn btn-sm" onclick="computeHash('SHA-1')">SHA-1</button>
+                                <button class="btn btn-sm" onclick="computeHash('SHA-256')">SHA-256</button>
+                                <button class="btn btn-sm" onclick="computeHash('SHA-512')">SHA-512</button>
+                            </div>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>HMAC (requires key)</label>
+                            <div class="inline-input">
+                                <input type="text" id="hmac-key" placeholder="Secret key">
+                                <button class="btn btn-sm" onclick="computeHMAC('SHA-256')">HMAC-SHA256</button>
+                                <button class="btn btn-sm" onclick="computeHMAC('SHA-512')">HMAC-SHA512</button>
+                            </div>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>Encoding</label>
+                            <div class="btn-group">
+                                <button class="btn btn-sm" onclick="encodeBase64()">Base64 Encode</button>
+                                <button class="btn btn-sm" onclick="decodeBase64()">Base64 Decode</button>
+                                <button class="btn btn-sm" onclick="encodeHex()">Hex Encode</button>
+                                <button class="btn btn-sm" onclick="decodeHex()">Hex Decode</button>
+                                <button class="btn btn-sm" onclick="encodeURL()">URL Encode</button>
+                                <button class="btn btn-sm" onclick="decodeURL()">URL Decode</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="output-group">
+                        <label>Output <button class="btn-copy" onclick="copyOutput('hash-output')">Copy</button></label>
+                        <textarea id="hash-output" readonly rows="4" placeholder="Results will appear here..."></textarea>
+                    </div>
+                    
+                    <div id="all-hashes" class="hash-table" style="display: none;">
+                        <h4>All Hashes</h4>
+                        <table>
+                            <tr><td>MD5</td><td id="all-md5">-</td><td><button class="btn-copy-sm" onclick="copyText('all-md5')">⎘</button></td></tr>
+                            <tr><td>SHA-1</td><td id="all-sha1">-</td><td><button class="btn-copy-sm" onclick="copyText('all-sha1')">⎘</button></td></tr>
+                            <tr><td>SHA-256</td><td id="all-sha256">-</td><td><button class="btn-copy-sm" onclick="copyText('all-sha256')">⎘</button></td></tr>
+                            <tr><td>SHA-512</td><td id="all-sha512">-</td><td><button class="btn-copy-sm" onclick="copyText('all-sha512')">⎘</button></td></tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="hash-file-tab" class="tab-content">
+                    <div class="file-drop-zone" id="hash-drop-zone">
+                        <div class="drop-icon">📁</div>
+                        <p>Drag & drop a file here or click to browse</p>
+                        <input type="file" id="hash-file-input" hidden>
+                        <span class="drop-hint">File will be processed locally in your browser</span>
+                    </div>
+                    
+                    <div id="file-hash-results" class="hash-table" style="display: none;">
+                        <h4>File: <span id="file-name">-</span> (<span id="file-size">-</span>)</h4>
+                        <div class="progress-bar" id="hash-progress" style="display: none;">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <table>
+                            <tr><td>MD5</td><td id="file-md5">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-md5')">⎘</button></td></tr>
+                            <tr><td>SHA-1</td><td id="file-sha1">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-sha1')">⎘</button></td></tr>
+                            <tr><td>SHA-256</td><td id="file-sha256">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-sha256')">⎘</button></td></tr>
+                            <tr><td>SHA-512</td><td id="file-sha512">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-sha512')">⎘</button></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- JWT Inspector Section -->
+        <section id="jwt" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> JWT / Token Inspector</h2>
+                <p>Decode, analyze, and verify JSON Web Tokens</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="input-group">
+                    <label>JWT Token</label>
+                    <textarea id="jwt-input" placeholder="Paste your JWT token here (eyJhbG...)" rows="4"></textarea>
+                    <button class="btn btn-primary" onclick="decodeJWT()">Decode Token</button>
+                </div>
+                
+                <div id="jwt-result" class="jwt-display" style="display: none;">
+                    <div class="jwt-parts">
+                        <div class="jwt-part header">
+                            <h4>Header <span class="jwt-tag">ALGORITHM & TYPE</span></h4>
+                            <pre id="jwt-header"></pre>
+                        </div>
+                        
+                        <div class="jwt-part payload">
+                            <h4>Payload <span class="jwt-tag">DATA</span></h4>
+                            <pre id="jwt-payload"></pre>
+                            <div id="jwt-claims" class="claims-info"></div>
+                        </div>
+                        
+                        <div class="jwt-part signature">
+                            <h4>Signature <span class="jwt-tag">VERIFY</span></h4>
+                            <pre id="jwt-signature"></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="jwt-verify">
+                        <h4>Verify Signature (Optional)</h4>
+                        <div class="verify-options">
+                            <select id="jwt-algo">
+                                <option value="HS256">HS256 (HMAC + SHA-256)</option>
+                                <option value="HS384">HS384 (HMAC + SHA-384)</option>
+                                <option value="HS512">HS512 (HMAC + SHA-512)</option>
+                            </select>
+                            <input type="text" id="jwt-secret" placeholder="Enter secret key">
+                            <button class="btn btn-secondary" onclick="verifyJWT()">Verify</button>
+                        </div>
+                        <div id="jwt-verify-result" class="verify-result"></div>
+                    </div>
+                </div>
+                
+                <div class="jwt-examples">
+                    <h4>Example JWT</h4>
+                    <button class="btn btn-sm" onclick="loadExampleJWT()">Load Example Token</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Regex Tester Section -->
+        <section id="regex" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Regex Tester & Explainer</h2>
+                <p>Test patterns, visualize matches, and get explanations</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="regex-input-area">
+                    <div class="input-group">
+                        <label>Pattern</label>
+                        <div class="regex-pattern-input">
+                            <span class="regex-delimiter">/</span>
+                            <input type="text" id="regex-pattern" placeholder="Enter regex pattern">
+                            <span class="regex-delimiter">/</span>
+                            <input type="text" id="regex-flags" placeholder="gi" value="g" class="regex-flags">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Test String</label>
+                        <textarea id="regex-test-string" placeholder="Enter text to test against..." rows="6"></textarea>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Replace With (Optional)</label>
+                        <input type="text" id="regex-replace" placeholder="Replacement string ($1, $2 for groups)">
+                    </div>
+                </div>
+                
+                <div class="regex-results">
+                    <div class="result-panel">
+                        <h4>Matches <span id="match-count" class="badge">0</span></h4>
+                        <div id="regex-matches" class="matches-display"></div>
+                    </div>
+                    
+                    <div class="result-panel">
+                        <h4>Highlighted Text</h4>
+                        <div id="regex-highlighted" class="highlighted-text"></div>
+                    </div>
+                    
+                    <div class="result-panel" id="replace-preview-panel" style="display: none;">
+                        <h4>Replace Preview</h4>
+                        <div id="regex-replace-preview" class="replace-preview"></div>
+                    </div>
+                    
+                    <div class="result-panel">
+                        <h4>Groups</h4>
+                        <div id="regex-groups" class="groups-display"></div>
+                    </div>
+                </div>
+                
+                <div class="regex-cheatsheet">
+                    <h4>Quick Reference <button class="btn-toggle" onclick="toggleCheatsheet()">▼</button></h4>
+                    <div id="cheatsheet-content" class="cheatsheet-content">
+                        <div class="cheatsheet-grid">
+                            <div class="cheatsheet-section">
+                                <h5>Anchors</h5>
+                                <code>^</code> Start of string<br>
+                                <code>$</code> End of string<br>
+                                <code>\b</code> Word boundary
+                            </div>
+                            <div class="cheatsheet-section">
+                                <h5>Character Classes</h5>
+                                <code>\d</code> Digit [0-9]<br>
+                                <code>\w</code> Word [a-zA-Z0-9_]<br>
+                                <code>\s</code> Whitespace<br>
+                                <code>.</code> Any character
+                            </div>
+                            <div class="cheatsheet-section">
+                                <h5>Quantifiers</h5>
+                                <code>*</code> 0 or more<br>
+                                <code>+</code> 1 or more<br>
+                                <code>?</code> 0 or 1<br>
+                                <code>{n,m}</code> n to m times
+                            </div>
+                            <div class="cheatsheet-section">
+                                <h5>Groups</h5>
+                                <code>(abc)</code> Capture group<br>
+                                <code>(?:abc)</code> Non-capture<br>
+                                <code>(?=abc)</code> Lookahead<br>
+                                <code>(?!abc)</code> Neg. lookahead
+                            </div>
+                            <div class="cheatsheet-section">
+                                <h5>Flags</h5>
+                                <code>g</code> Global<br>
+                                <code>i</code> Case insensitive<br>
+                                <code>m</code> Multiline<br>
+                                <code>s</code> Dotall
+                            </div>
+                            <div class="cheatsheet-section">
+                                <h5>Special</h5>
+                                <code>[abc]</code> Character set<br>
+                                <code>[^abc]</code> Negated set<br>
+                                <code>a|b</code> Alternation<br>
+                                <code>\</code> Escape
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- JSON/YAML Converter Section -->
+        <section id="json" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> YAML / JSON Converter & Validator</h2>
+                <p>Convert, validate, prettify, and minify with path navigation</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="converter-layout">
+                    <div class="converter-panel">
+                        <div class="panel-header">
+                            <select id="input-format">
+                                <option value="json">JSON</option>
+                                <option value="yaml">YAML</option>
+                            </select>
+                            <div class="btn-group">
+                                <button class="btn btn-sm" onclick="prettifyInput()">Prettify</button>
+                                <button class="btn btn-sm" onclick="minifyInput()">Minify</button>
+                                <button class="btn btn-sm" onclick="clearInput()">Clear</button>
+                            </div>
+                        </div>
+                        <textarea id="json-input" placeholder="Paste JSON or YAML here..." rows="15"></textarea>
+                        <div id="input-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="converter-actions">
+                        <button class="btn btn-primary btn-convert" onclick="convertData()">
+                            <span>Convert →</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="swapFormats()">↔ Swap</button>
+                    </div>
+                    
+                    <div class="converter-panel">
+                        <div class="panel-header">
+                            <select id="output-format">
+                                <option value="yaml">YAML</option>
+                                <option value="json">JSON</option>
+                            </select>
+                            <div class="btn-group">
+                                <button class="btn btn-sm" onclick="copyOutput('json-output')">Copy</button>
+                                <button class="btn btn-sm" onclick="downloadOutput()">Download</button>
+                            </div>
+                        </div>
+                        <textarea id="json-output" readonly placeholder="Converted output..." rows="15"></textarea>
+                    </div>
+                </div>
+                
+                <div class="json-tools">
+                    <div class="tool-panel">
+                        <h4>Path Navigator</h4>
+                        <input type="text" id="json-path" placeholder="e.g., data.users[0].name">
+                        <button class="btn btn-sm" onclick="navigatePath()">Get Value</button>
+                        <pre id="path-result"></pre>
+                    </div>
+                    
+                    <div class="tool-panel">
+                        <h4>JSON Schema Validation</h4>
+                        <textarea id="json-schema" placeholder="Paste JSON Schema here..." rows="5"></textarea>
+                        <button class="btn btn-sm" onclick="validateSchema()">Validate Against Schema</button>
+                        <div id="schema-result" class="schema-result"></div>
+                    </div>
+                </div>
+                
+                <div class="json-tree-container" style="display: none;">
+                    <h4>Tree View</h4>
+                    <div id="json-tree" class="json-tree"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hex Viewer Section -->
+        <section id="hex" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Binary String / Hex Viewer</h2>
+                <p>Analyze binary files with hex dump, ASCII view, and signature detection</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchHexTab('paste')">Paste Data</button>
+                    <button class="tab" onclick="switchHexTab('upload')">Upload File</button>
+                </div>
+                
+                <div id="hex-paste-tab" class="tab-content active">
+                    <div class="input-group">
+                        <label>Input (text, hex string, or base64)</label>
+                        <textarea id="hex-input" placeholder="Paste text, hex string (e.g., 4d5a...), or base64 data..." rows="4"></textarea>
+                        <div class="btn-group">
+                            <button class="btn btn-sm active" onclick="setHexInputType('text')">Text</button>
+                            <button class="btn btn-sm" onclick="setHexInputType('hex')">Hex String</button>
+                            <button class="btn btn-sm" onclick="setHexInputType('base64')">Base64</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="analyzeHex()">Analyze</button>
+                </div>
+                
+                <div id="hex-upload-tab" class="tab-content">
+                    <div class="file-drop-zone" id="hex-drop-zone">
+                        <div class="drop-icon">📁</div>
+                        <p>Drag & drop a file here or click to browse</p>
+                        <input type="file" id="hex-file-input" hidden>
+                        <span class="drop-hint">Max recommended size: 1MB for smooth viewing</span>
+                    </div>
+                </div>
+                
+                <div id="hex-results" class="hex-results" style="display: none;">
+                    <div class="hex-info">
+                        <div class="info-item">
+                            <span class="label">Size:</span>
+                            <span id="hex-size">-</span>
+                        </div>
+                        <div class="info-item" id="signature-info" style="display: none;">
+                            <span class="label">Detected:</span>
+                            <span id="hex-signature" class="signature-badge">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hex-controls">
+                        <label>Bytes per row:</label>
+                        <select id="bytes-per-row" onchange="updateHexView()">
+                            <option value="8">8</option>
+                            <option value="16" selected>16</option>
+                            <option value="32">32</option>
+                        </select>
+                        <label>Offset:</label>
+                        <input type="number" id="hex-offset" value="0" min="0" onchange="updateHexView()">
+                        <label>Limit:</label>
+                        <input type="number" id="hex-limit" value="512" min="16" max="4096" onchange="updateHexView()">
+                    </div>
+                    
+                    <div class="hex-display">
+                        <div class="hex-header">
+                            <span class="offset-col">Offset</span>
+                            <span class="hex-col">Hex</span>
+                            <span class="ascii-col">ASCII</span>
+                        </div>
+                        <div id="hex-view" class="hex-view"></div>
+                    </div>
+                    
+                    <div class="hex-strings" style="display: none;">
+                        <h4>Detected Strings (min 4 chars)</h4>
+                        <div id="hex-strings-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checksum Lookup Section -->
+        <section id="checksum" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Checksum Lookup</h2>
+                <p>Verify file integrity and lookup hash reputation</p>
+            </div>
+            
+            <div class="tool-container">
+                <div class="checksum-warning">
+                    <span class="warning-icon">⚠️</span>
+                    <span>External lookups (VirusTotal) will send hash values to third-party servers. File contents are never uploaded.</span>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchChecksumTab('verify')">Verify Checksum</button>
+                    <button class="tab" onclick="switchChecksumTab('lookup')">Hash Lookup</button>
+                    <button class="tab" onclick="switchChecksumTab('compare')">Compare Files</button>
+                </div>
+                
+                <div id="checksum-verify-tab" class="tab-content active">
+                    <div class="file-drop-zone" id="checksum-drop-zone">
+                        <div class="drop-icon">📁</div>
+                        <p>Drag & drop a file to calculate its checksums</p>
+                        <input type="file" id="checksum-file-input" hidden>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Expected Checksum (to verify against)</label>
+                        <input type="text" id="expected-checksum" placeholder="Paste expected hash value...">
+                    </div>
+                    
+                    <div id="checksum-results" class="hash-table" style="display: none;">
+                        <h4>Calculated Checksums</h4>
+                        <table>
+                            <tr>
+                                <td>MD5</td>
+                                <td id="checksum-md5">-</td>
+                                <td><span id="verify-md5" class="verify-badge"></span></td>
+                                <td><button class="btn-copy-sm" onclick="copyText('checksum-md5')">⎘</button></td>
+                            </tr>
+                            <tr>
+                                <td>SHA-1</td>
+                                <td id="checksum-sha1">-</td>
+                                <td><span id="verify-sha1" class="verify-badge"></span></td>
+                                <td><button class="btn-copy-sm" onclick="copyText('checksum-sha1')">⎘</button></td>
+                            </tr>
+                            <tr>
+                                <td>SHA-256</td>
+                                <td id="checksum-sha256">-</td>
+                                <td><span id="verify-sha256" class="verify-badge"></span></td>
+                                <td><button class="btn-copy-sm" onclick="copyText('checksum-sha256')">⎘</button></td>
+                            </tr>
+                            <tr>
+                                <td>SHA-512</td>
+                                <td id="checksum-sha512">-</td>
+                                <td><span id="verify-sha512" class="verify-badge"></span></td>
+                                <td><button class="btn-copy-sm" onclick="copyText('checksum-sha512')">⎘</button></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="checksum-lookup-tab" class="tab-content">
+                    <div class="input-group">
+                        <label>Hash to Lookup</label>
+                        <input type="text" id="lookup-hash" placeholder="Enter MD5, SHA-1, or SHA-256 hash...">
+                    </div>
+                    
+                    <div class="lookup-options">
+                        <h4>Lookup Sources</h4>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="lookup-local" checked>
+                            <span>Local Known-Good Database</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="lookup-vt">
+                            <span>VirusTotal API <span class="warning-badge">Requires API Key</span></span>
+                        </label>
+                        <div id="vt-key-input" style="display: none;">
+                            <input type="password" id="vt-api-key" placeholder="Enter VirusTotal API key">
+                            <small>Your API key is stored locally and never sent to our servers</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="lookupHash()">Lookup Hash</button>
+                    
+                    <div id="lookup-results" class="lookup-results" style="display: none;">
+                        <h4>Results</h4>
+                        <div id="lookup-content"></div>
+                    </div>
+                </div>
+                
+                <div id="checksum-compare-tab" class="tab-content">
+                    <div class="compare-layout">
+                        <div class="compare-panel">
+                            <h4>File 1</h4>
+                            <div class="file-drop-zone small" id="compare-drop-1">
+                                <p>Drop file 1</p>
+                                <input type="file" id="compare-file-1" hidden>
+                            </div>
+                            <div id="compare-hash-1" class="compare-hash">-</div>
+                        </div>
+                        <div class="compare-result">
+                            <div id="compare-status" class="compare-status">
+                                <span class="status-icon">?</span>
+                                <span class="status-text">Drop two files to compare</span>
+                            </div>
+                        </div>
+                        <div class="compare-panel">
+                            <h4>File 2</h4>
+                            <div class="file-drop-zone small" id="compare-drop-2">
+                                <p>Drop file 2</p>
+                                <input type="file" id="compare-file-2" hidden>
+                            </div>
+                            <div id="compare-hash-2" class="compare-hash">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="known-hashes">
+                    <h4>Local Known-Good Hashes Database</h4>
+                    <p>Common system files and tools verified checksums</p>
+                    <div class="hash-db-stats">
+                        <span id="db-count">0</span> hashes in local database
+                        <button class="btn btn-sm" onclick="showHashDB()">View Database</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Built for hackers, by hackers. All processing happens in your browser.</p>
+            <div class="footer-links">
+                <a href="https://github.com/bytehackr" target="_blank">GitHub</a>
+                <span>•</span>
+                <a href="#" onclick="showSection('home')">Home</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="js/md5.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
