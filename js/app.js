@@ -10,12 +10,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     initMatrixBackground();
     initNavigation();
+    initCryptoTool();
+    initNetworkTool();
     initHashTool();
     initJWTTool();
     initRegexTool();
     initJSONTool();
     initHexTool();
     initChecksumTool();
+    initBinaryTool();
     updateDBCount();
 });
 
@@ -100,6 +103,428 @@ function showSection(sectionId) {
     
     // Scroll to top
     window.scrollTo(0, 0);
+}
+
+// ============================================================================
+// CRYPTO PLAYGROUND
+// ============================================================================
+
+function initCryptoTool() {
+    document.getElementById('aes-encrypt-btn')?.addEventListener('click', () => handleAES('encrypt'));
+    document.getElementById('aes-decrypt-btn')?.addEventListener('click', () => handleAES('decrypt'));
+    document.getElementById('rsa-generate-btn')?.addEventListener('click', generateRSAKeys);
+    document.getElementById('random-generate-btn')?.addEventListener('click', generateRandomBytes);
+}
+
+async function handleAES(action) {
+    const inputEl = document.getElementById('aes-input');
+    const passwordEl = document.getElementById('aes-password');
+    const mode = document.getElementById('aes-mode')?.value || 'AES-GCM';
+    const ivEl = document.getElementById('aes-iv');
+    const outputEl = document.getElementById('aes-output');
+
+    if (!inputEl || !passwordEl || !ivEl || !outputEl) return;
+
+    const text = inputEl.value.trim();
+    const password = passwordEl.value.trim();
+
+    if (!text || !password) {
+        outputEl.value = 'Input text and secret phrase are required.';
+        return;
+    }
+
+    try {
+        const { key, iv } = await deriveAESKey(password, mode, ivEl.value.trim());
+        if (action === 'encrypt') {
+            const encrypted = await crypto.subtle.encrypt(
+                { name: mode, iv },
+                key,
+                new TextEncoder().encode(text)
+            );
+            outputEl.value = arrayBufferToBase64(encrypted);
+            ivEl.value = bytesToHex(iv);
+        } else {
+            const decrypted = await crypto.subtle.decrypt(
+                { name: mode, iv },
+                key,
+                base64ToArrayBuffer(text)
+            );
+            outputEl.value = new TextDecoder().decode(decrypted);
+        }
+    } catch (error) {
+        outputEl.value = `Error: ${error.message}`;
+    }
+}
+
+async function deriveAESKey(password, mode, ivHex) {
+    const encoder = new TextEncoder();
+    const salt = encoder.encode('bytehackr-aes-salt');
+    const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt,
+            iterations: 100000,
+            hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: mode, length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+    const expectedLength = mode === 'AES-GCM' ? 12 : 16;
+    let iv;
+    if (ivHex) {
+        iv = hexToBytes(ivHex);
+    } else {
+        iv = crypto.getRandomValues(new Uint8Array(expectedLength));
+    }
+    if (!iv || iv.length !== expectedLength) {
+        throw new Error(`IV must be ${expectedLength} bytes (${expectedLength * 2} hex chars).`);
+    }
+    return { key, iv };
+}
+
+async function generateRSAKeys() {
+    const statusEl = document.getElementById('rsa-status');
+    const publicEl = document.getElementById('rsa-public');
+    const privateEl = document.getElementById('rsa-private');
+    if (!statusEl || !publicEl || !privateEl) return;
+
+    statusEl.textContent = 'Generating key pair...';
+    publicEl.value = '';
+    privateEl.value = '';
+
+    try {
+        const keyPair = await crypto.subtle.generateKey(
+            {
+                name: 'RSA-PSS',
+                modulusLength: 2048,
+                publicExponent: new Uint8Array([1, 0, 1]),
+                hash: 'SHA-256'
+            },
+            true,
+            ['sign', 'verify']
+        );
+
+        const publicKey = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+        const privateKey = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+        publicEl.value = arrayBufferToPem(publicKey, 'PUBLIC KEY');
+        privateEl.value = arrayBufferToPem(privateKey, 'PRIVATE KEY');
+        statusEl.textContent = 'Key pair ready.';
+    } catch (error) {
+        statusEl.textContent = `Error: ${error.message}`;
+    }
+}
+
+function generateRandomBytes() {
+    const lengthInput = document.getElementById('random-length');
+    const outputEl = document.getElementById('random-output');
+    const entropyEl = document.getElementById('random-entropy');
+    if (!lengthInput || !outputEl || !entropyEl) return;
+
+    const length = Math.min(Math.max(parseInt(lengthInput.value, 10) || 32, 8), 4096);
+    const bytes = crypto.getRandomValues(new Uint8Array(length));
+    outputEl.value = bytesToHex(bytes);
+    const entropyPerByte = calculateEntropy(bytes);
+    entropyEl.textContent = `${(entropyPerByte * length).toFixed(2)} bits`;
+}
+
+// ============================================================================
+// NETWORK TOOLKIT
+// ============================================================================
+
+function initNetworkTool() {
+    document.getElementById('http-send-btn')?.addEventListener('click', sendHttpRequest);
+    document.getElementById('dns-resolve-btn')?.addEventListener('click', resolveDNS);
+    document.getElementById('tls-decode-btn')?.addEventListener('click', decodeTLSFingerprint);
+}
+
+async function sendHttpRequest() {
+    const method = document.getElementById('http-method')?.value || 'GET';
+    const url = document.getElementById('http-url')?.value.trim();
+    const headersInput = document.getElementById('http-headers');
+    const bodyInput = document.getElementById('http-body');
+    const statusEl = document.getElementById('http-status');
+    const headersEl = document.getElementById('http-response-headers');
+    const bodyEl = document.getElementById('http-response-body');
+
+    if (!url) {
+        statusEl.textContent = 'Missing URL';
+        return;
+    }
+
+    try {
+        statusEl.textContent = 'Sending...';
+        headersEl.textContent = '';
+        bodyEl.value = '';
+
+        const headers = parseHeaders(headersInput.value);
+        const options = { method, headers };
+        if (!['GET', 'HEAD'].includes(method.toUpperCase()) && bodyInput.value) {
+            options.body = bodyInput.value;
+        }
+
+        const response = await fetch(url, options);
+        const text = await response.text();
+        statusEl.textContent = `${response.status} ${response.statusText}`;
+        headersEl.textContent = [...response.headers.entries()].map(([k, v]) => `${k}: ${v}`).join('\n');
+        bodyEl.value = text;
+    } catch (error) {
+        statusEl.textContent = `Error: ${error.message}`;
+    }
+}
+
+function parseHeaders(raw) {
+    const headers = {};
+    if (!raw) return headers;
+    raw.split('\n').forEach(line => {
+        const idx = line.indexOf(':');
+        if (idx === -1) return;
+        const key = line.slice(0, idx).trim();
+        const value = line.slice(idx + 1).trim();
+        if (key) headers[key] = value;
+    });
+    return headers;
+}
+
+async function resolveDNS() {
+    const host = document.getElementById('dns-host')?.value.trim();
+    const type = document.getElementById('dns-type')?.value || 'A';
+    const resultsEl = document.getElementById('dns-results');
+
+    if (!host || !resultsEl) return;
+
+    resultsEl.innerHTML = '<div class="dns-placeholder">Resolving...</div>';
+
+    try {
+        const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${encodeURIComponent(type)}`, {
+            headers: { accept: 'application/dns-json' }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        renderDnsResults(data, resultsEl);
+    } catch (error) {
+        resultsEl.innerHTML = `<div class="dns-placeholder">Lookup failed: ${error.message}</div>`;
+    }
+}
+
+function renderDnsResults(data, container) {
+    if (!data.Answer || data.Answer.length === 0) {
+        container.innerHTML = '<div class="dns-placeholder">No answers returned.</div>';
+        return;
+    }
+    const rows = data.Answer.map(answer => `
+        <tr>
+            <td>${answer.name}</td>
+            <td>${answer.type}</td>
+            <td>${answer.TTL}s</td>
+            <td>${escapeHtml(answer.data)}</td>
+        </tr>
+    `).join('');
+    container.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>TTL</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    `;
+}
+
+function decodeTLSFingerprint() {
+    const inputEl = document.getElementById('tls-input');
+    const outputEl = document.getElementById('tls-output');
+    if (!inputEl || !outputEl) return;
+
+    const value = inputEl.value.trim();
+    if (!value) {
+        outputEl.textContent = 'Enter a JA3 / JA3S string to decode.';
+        return;
+    }
+
+    const parts = value.split(',');
+    if (parts.length !== 5) {
+        outputEl.textContent = 'Unexpected format. Expected 5 comma-separated sections.';
+        return;
+    }
+
+    const [sslVersion, ciphers, extensions, curves, pointFormats] = parts;
+    outputEl.innerHTML = `
+        <p><strong>SSL Version:</strong> ${sslVersion}</p>
+        <p><strong>Cipher Suites:</strong> ${(ciphers || '').split('-').join(', ') || 'None'}</p>
+        <p><strong>Extensions:</strong> ${(extensions || '').split('-').join(', ') || 'None'}</p>
+        <p><strong>Elliptic Curves:</strong> ${(curves || '').split('-').join(', ') || 'None'}</p>
+        <p><strong>Point Formats:</strong> ${(pointFormats || '').split('-').join(', ') || 'None'}</p>
+    `;
+}
+
+// ============================================================================
+// BINARY ANALYSIS LAB
+// ============================================================================
+
+function initBinaryTool() {
+    const dropZone = document.getElementById('binary-drop-zone');
+    const fileInput = document.getElementById('binary-file-input');
+    if (!dropZone || !fileInput) return;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    ['dragover', 'dragenter'].forEach(eventName => {
+        dropZone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.remove('dragover');
+        });
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file) analyzeBinaryFile(file);
+    });
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) analyzeBinaryFile(file);
+    });
+}
+
+async function analyzeBinaryFile(file) {
+    const typeEl = document.getElementById('binary-type');
+    const sizeEl = document.getElementById('binary-size');
+    const entryEl = document.getElementById('binary-entry');
+    const entropyEl = document.getElementById('binary-entropy');
+    const sectionsEl = document.getElementById('binary-sections-table');
+    const stringsEl = document.getElementById('binary-strings-list');
+
+    if (!typeEl || !sizeEl || !entryEl || !entropyEl || !sectionsEl || !stringsEl) return;
+
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+
+    sizeEl.textContent = formatFileSize(file.size);
+    entropyEl.textContent = `${calculateEntropy(bytes).toFixed(2)} bits/byte`;
+
+    let parsed = null;
+    if (bytes[0] === 0x4D && bytes[1] === 0x5A) {
+        parsed = parsePEFile(bytes);
+    } else if (bytes[0] === 0x7F && bytes[1] === 0x45 && bytes[2] === 0x4C && bytes[3] === 0x46) {
+        parsed = parseELFFile(bytes);
+    }
+
+    typeEl.textContent = parsed?.type || 'Unknown';
+    entryEl.textContent = parsed?.entryPoint || '-';
+
+    if (parsed?.sections?.length) {
+        sectionsEl.innerHTML = parsed.sections.map(section => `
+            <tr>
+                <td>${section.name}</td>
+                <td>${section.virtualSize}</td>
+                <td>${section.rawSize}</td>
+                <td>${section.characteristics}</td>
+            </tr>
+        `).join('');
+    } else {
+        sectionsEl.innerHTML = '<tr><td colspan="4">No section data available.</td></tr>';
+    }
+
+    const strings = extractStrings(bytes, 4, 120);
+    if (strings.length === 0) {
+        stringsEl.textContent = 'No printable strings found.';
+    } else {
+        stringsEl.innerHTML = strings.map(str => `<code>${escapeHtml(str)}</code>`).join('');
+    }
+}
+
+function parsePEFile(bytes) {
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const peOffset = dv.getUint32(0x3c, true);
+    if (peOffset + 24 > dv.byteLength) return null;
+    const signature = dv.getUint32(peOffset, false);
+    if (signature !== 0x50450000) return null;
+
+    const machine = dv.getUint16(peOffset + 4, true);
+    const numberOfSections = dv.getUint16(peOffset + 6, true);
+    const sizeOfOptionalHeader = dv.getUint16(peOffset + 20, true);
+    const optionalHeaderOffset = peOffset + 24;
+    const magic = dv.getUint16(optionalHeaderOffset, true);
+    const entryPoint = dv.getUint32(optionalHeaderOffset + 16, true);
+    const sectionTableOffset = optionalHeaderOffset + sizeOfOptionalHeader;
+    const sections = [];
+
+    for (let i = 0; i < numberOfSections; i++) {
+        const base = sectionTableOffset + i * 40;
+        if (base + 40 > dv.byteLength) break;
+        const nameBytes = bytes.subarray(base, base + 8);
+        const name = new TextDecoder().decode(nameBytes).replace(/\u0000+$/, '') || '(unnamed)';
+        const virtualSize = dv.getUint32(base + 8, true);
+        const rawSize = dv.getUint32(base + 16, true);
+        const characteristics = dv.getUint32(base + 36, true);
+        sections.push({
+            name,
+            virtualSize: `0x${virtualSize.toString(16)}`,
+            rawSize: `0x${rawSize.toString(16)}`,
+            characteristics: `0x${characteristics.toString(16)}`
+        });
+    }
+
+    return {
+        type: magic === 0x20b ? 'PE32+' : 'PE32',
+        entryPoint: `0x${entryPoint.toString(16)}`,
+        machine: getMachineDescription(machine),
+        sections
+    };
+}
+
+function parseELFFile(bytes) {
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const elfClass = dv.getUint8(4);
+    const littleEndian = dv.getUint8(5) === 1;
+    const machine = dv.getUint16(18, littleEndian);
+
+    let entryPoint;
+    if (elfClass === 1) {
+        entryPoint = dv.getUint32(24, littleEndian);
+    } else if (dv.getBigUint64) {
+        entryPoint = Number(dv.getBigUint64(24, littleEndian));
+    } else {
+        entryPoint = 0;
+    }
+
+    return {
+        type: elfClass === 1 ? 'ELF32' : 'ELF64',
+        entryPoint: `0x${entryPoint.toString(16)}`,
+        machine: getMachineDescription(machine),
+        sections: []
+    };
+}
+
+function extractStrings(bytes, minLength = 4, limit = 200) {
+    const results = [];
+    let current = [];
+    for (const byte of bytes) {
+        if (byte >= 32 && byte <= 126) {
+            current.push(String.fromCharCode(byte));
+        } else {
+            if (current.length >= minLength) {
+                results.push(current.join(''));
+                if (results.length >= limit) break;
+            }
+            current = [];
+        }
+    }
+    if (current.length >= minLength && results.length < limit) {
+        results.push(current.join(''));
+    }
+    return results;
 }
 
 // ============================================================================
@@ -1541,6 +1966,75 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function arrayBufferToPem(buffer, label) {
+    const base64 = arrayBufferToBase64(buffer);
+    const chunked = base64.replace(/(.{64})/g, '$1\n');
+    return `-----BEGIN ${label}-----\n${chunked}\n-----END ${label}-----`;
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+    }
+    return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
+function bytesToHex(bytes) {
+    return Array.from(bytes)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+function hexToBytes(hex) {
+    const clean = hex.replace(/[^a-fA-F0-9]/g, '');
+    if (clean.length % 2 !== 0) throw new Error('Hex string must have an even length.');
+    const bytes = new Uint8Array(clean.length / 2);
+    for (let i = 0; i < clean.length; i += 2) {
+        bytes[i / 2] = parseInt(clean.substr(i, 2), 16);
+    }
+    return bytes;
+}
+
+function calculateEntropy(bytes) {
+    if (!bytes?.length) return 0;
+    const counts = new Array(256).fill(0);
+    bytes.forEach((byte) => counts[byte]++);
+    let entropy = 0;
+    const length = bytes.length;
+    for (const count of counts) {
+        if (!count) continue;
+        const p = count / length;
+        entropy -= p * Math.log2(p);
+    }
+    return entropy;
+}
+
+function getMachineDescription(machine) {
+    const mapping = {
+        0x014c: 'Intel 386',
+        0x8664: 'x64',
+        0x01c4: 'ARMv7',
+        0xaa64: 'ARM64',
+        0x0200: 'Intel Itanium',
+        0x0003: 'Intel 80386',
+        0x0000: 'Unknown'
+    };
+    return mapping[machine] || `Machine 0x${machine.toString(16)}`;
 }
 
 function debounce(func, wait) {

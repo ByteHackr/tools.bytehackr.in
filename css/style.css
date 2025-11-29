@@ -479,11 +479,233 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 #hash .tool-container::before { content: "> hashing"; }
+#crypto .tool-container::before { content: "> crypto"; }
+#network .tool-container::before { content: "> network"; }
 #jwt .tool-container::before { content: "> jwt"; }
 #regex .tool-container::before { content: "> regex"; }
 #json .tool-container::before { content: "> converters"; }
 #hex .tool-container::before { content: "> hex-viewer"; }
 #checksum .tool-container::before { content: "> checksum"; }
+#binary .tool-container::before { content: "> binary-lab"; }
+
+.terminal-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.crypto-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.network-grid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.terminal-panel {
+    border: 1px solid rgba(54, 255, 181, 0.12);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    background: rgba(5, 8, 9, 0.85);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.terminal-panel h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-secondary);
+}
+
+.panel-subtext {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.panel-note {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.status-line {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    border: 1px dashed rgba(54, 255, 181, 0.2);
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+}
+
+.crypto-inline {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.crypto-inline > div {
+    flex: 1 1 200px;
+}
+
+.random-btn-wrap {
+    display: flex;
+    align-items: flex-end;
+}
+
+.entropy-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border-top: 1px solid rgba(54, 255, 181, 0.15);
+    padding-top: 0.5rem;
+}
+
+.http-panel textarea,
+.http-panel input,
+.http-panel select {
+    background: var(--bg-primary);
+}
+
+.http-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.http-row select {
+    width: 110px;
+}
+
+.http-row button {
+    white-space: nowrap;
+}
+
+.http-response {
+    border-top: 1px solid rgba(54, 255, 181, 0.15);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.http-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.http-response pre {
+    min-height: 140px;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    overflow: auto;
+}
+
+.http-response textarea {
+    min-height: 140px;
+}
+
+.dns-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.dns-row input {
+    flex: 1 1 200px;
+}
+
+.dns-results {
+    min-height: 150px;
+    border: 1px solid rgba(54, 255, 181, 0.15);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+}
+
+.dns-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dns-results th,
+.dns-results td {
+    border-bottom: 1px solid rgba(54, 255, 181, 0.1);
+    padding: 0.35rem;
+    text-align: left;
+}
+
+.dns-placeholder {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.tls-output {
+    border: 1px solid rgba(54, 255, 181, 0.15);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    min-height: 100px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+.binary-layout {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.binary-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.binary-panel th,
+.binary-panel td {
+    border-bottom: 1px solid rgba(54, 255, 181, 0.1);
+    padding: 0.4rem;
+    text-align: left;
+}
+
+.binary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+
+.binary-stats span {
+    color: var(--text-muted);
+    margin-right: 0.25rem;
+}
+
+.strings-list {
+    max-height: 260px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+    background: var(--bg-primary);
+    border: 1px solid rgba(54, 255, 181, 0.15);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    line-height: 1.6;
+}
+
+.strings-list code {
+    display: block;
+    color: var(--accent-secondary);
+    margin-bottom: 0.25rem;
+}
+
 
 /* Tabs */
 .tabs {

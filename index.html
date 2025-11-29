@@ -29,12 +29,15 @@
                     <span></span>
                 </button>
                 <ul class="nav-menu">
+                    <li><a href="#" onclick="showSection('crypto')" data-section="crypto">Crypto</a></li>
+                    <li><a href="#" onclick="showSection('network')" data-section="network">Network</a></li>
                     <li><a href="#" onclick="showSection('hash')" data-section="hash">Hashing</a></li>
                     <li><a href="#" onclick="showSection('jwt')" data-section="jwt">JWT</a></li>
                     <li><a href="#" onclick="showSection('regex')" data-section="regex">Regex</a></li>
                     <li><a href="#" onclick="showSection('json')" data-section="json">JSON/YAML</a></li>
                     <li><a href="#" onclick="showSection('hex')" data-section="hex">Hex Viewer</a></li>
                     <li><a href="#" onclick="showSection('checksum')" data-section="checksum">Checksum</a></li>
+                    <li><a href="#" onclick="showSection('binary')" data-section="binary">Binary</a></li>
                 </ul>
             </nav>
         </div>
@@ -112,6 +115,167 @@
             <div class="security-notice">
                 <span class="notice-icon">🛡️</span>
                 <span>100% Client-Side • Zero Data Collection • Open Source</span>
+            </div>
+        </section>
+
+        <!-- Crypto Playground Section -->
+        <section id="crypto" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Crypto Playground</h2>
+                <p>Operate modern ciphers, keys, and randomness tools entirely in your browser</p>
+            </div>
+            <div class="tool-container">
+                <div class="terminal-grid crypto-grid">
+                    <div class="terminal-panel">
+                        <h3>AES Workbench</h3>
+                        <p class="panel-subtext">AES-GCM / AES-CBC with PBKDF2 (100k iterations) and user-selectable IVs</p>
+                        <div class="input-group">
+                            <label>Plaintext / Ciphertext</label>
+                            <textarea id="aes-input" rows="4" placeholder="Enter plaintext to encrypt or ciphertext (Base64) to decrypt..."></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Secret Phrase</label>
+                            <input type="text" id="aes-password" placeholder="Passphrase used to derive the key">
+                        </div>
+                        <div class="crypto-inline">
+                            <div>
+                                <label>Mode</label>
+                                <select id="aes-mode">
+                                    <option value="AES-GCM">AES-GCM (recommended)</option>
+                                    <option value="AES-CBC">AES-CBC</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>IV (hex, optional)</label>
+                                <input type="text" id="aes-iv" placeholder="auto-generated if empty">
+                            </div>
+                        </div>
+                        <div class="btn-group crypto-actions">
+                            <button class="btn btn-primary btn-sm" id="aes-encrypt-btn">Encrypt</button>
+                            <button class="btn btn-secondary btn-sm" id="aes-decrypt-btn">Decrypt</button>
+                        </div>
+                        <div class="output-group mt-1">
+                            <label>Result</label>
+                            <textarea id="aes-output" readonly rows="3" placeholder="Ciphertext (Base64) or plaintext output..."></textarea>
+                        </div>
+                        <small class="panel-note">All crypto runs locally via WebCrypto. Save the salt + IV for future decrypts.</small>
+                    </div>
+
+                    <div class="terminal-panel">
+                        <h3>RSA Key Forge</h3>
+                        <p class="panel-subtext">Generate exportable 2048-bit RSA key pairs (PKCS#8 / SPKI)</p>
+                        <button class="btn btn-primary btn-sm" id="rsa-generate-btn">Generate Key Pair</button>
+                        <div class="status-line" id="rsa-status">Ready</div>
+                        <div class="input-group">
+                            <label>Public Key (PEM)</label>
+                            <textarea id="rsa-public" readonly rows="5" placeholder="-----BEGIN PUBLIC KEY-----"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Private Key (PEM)</label>
+                            <textarea id="rsa-private" readonly rows="6" placeholder="-----BEGIN PRIVATE KEY-----"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="terminal-panel">
+                        <h3>Randomness Lab</h3>
+                        <p class="panel-subtext">Secure random bytes & entropy estimation for payloads and credentials</p>
+                        <div class="crypto-inline">
+                            <div>
+                                <label>Bytes</label>
+                                <input type="number" id="random-length" min="8" max="4096" value="32">
+                            </div>
+                            <div class="random-btn-wrap">
+                                <button class="btn btn-primary btn-sm" id="random-generate-btn">Generate</button>
+                            </div>
+                        </div>
+                        <div class="input-group mt-1">
+                            <label>Output (hex)</label>
+                            <textarea id="random-output" readonly rows="4" placeholder="Generated bytes will appear here..."></textarea>
+                        </div>
+                        <div class="entropy-line">
+                            <span>Estimated Entropy:</span>
+                            <strong id="random-entropy">0 bits</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Network Toolkit Section -->
+        <section id="network" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Network Operations Toolkit</h2>
+                <p>Craft HTTP requests, resolve DNS over HTTPS, and decode TLS fingerprints</p>
+            </div>
+            <div class="tool-container">
+                <div class="terminal-grid network-grid">
+                    <div class="terminal-panel http-panel">
+                        <h3>HTTP Request Builder</h3>
+                        <p class="panel-subtext">Uses fetch(); some targets may block via CORS policies.</p>
+                        <div class="http-row">
+                            <select id="http-method">
+                                <option>GET</option>
+                                <option>POST</option>
+                                <option>PUT</option>
+                                <option>DELETE</option>
+                                <option>PATCH</option>
+                                <option>HEAD</option>
+                            </select>
+                            <input type="text" id="http-url" placeholder="https://target.tld/api">
+                            <button class="btn btn-primary btn-sm" id="http-send-btn">Send</button>
+                        </div>
+                        <div class="input-group">
+                            <label>Headers (one per line, e.g., X-Key: value)</label>
+                            <textarea id="http-headers" rows="3"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Body</label>
+                            <textarea id="http-body" rows="3" placeholder="Optional request body..."></textarea>
+                        </div>
+                        <div class="http-response">
+                            <div class="status-line">Status: <span id="http-status">-</span></div>
+                            <div class="http-columns">
+                                <div>
+                                    <label>Response Headers</label>
+                                    <pre id="http-response-headers"></pre>
+                                </div>
+                                <div>
+                                    <label>Body</label>
+                                    <textarea id="http-response-body" readonly rows="8"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="terminal-panel">
+                        <h3>DNS over HTTPS</h3>
+                        <p class="panel-subtext">Queries Cloudflare DoH (application/dns-json)</p>
+                        <div class="dns-row">
+                            <input type="text" id="dns-host" placeholder="example.com">
+                            <select id="dns-type">
+                                <option value="A">A</option>
+                                <option value="AAAA">AAAA</option>
+                                <option value="TXT">TXT</option>
+                                <option value="CNAME">CNAME</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" id="dns-resolve-btn">Resolve</button>
+                        </div>
+                        <div id="dns-results" class="dns-results">
+                            <div class="dns-placeholder">Submit a query to view answers.</div>
+                        </div>
+                    </div>
+
+                    <div class="terminal-panel">
+                        <h3>TLS Fingerprint Decoder</h3>
+                        <p class="panel-subtext">Decode JA3 / JA3S strings for quick recon</p>
+                        <div class="input-group">
+                            <label>JA3 / JA3S String</label>
+                            <textarea id="tls-input" rows="3" placeholder="771,4865-4866-4867,0-23-65281,10-11-13,29-23-24"></textarea>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" id="tls-decode-btn">Decode</button>
+                        <div id="tls-output" class="tls-output"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -202,6 +366,57 @@
                             <tr><td>SHA-256</td><td id="file-sha256">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-sha256')">⎘</button></td></tr>
                             <tr><td>SHA-512</td><td id="file-sha512">Computing...</td><td><button class="btn-copy-sm" onclick="copyText('file-sha512')">⎘</button></td></tr>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Binary Analysis Section -->
+        <section id="binary" class="section">
+            <div class="section-header">
+                <h2><span class="accent">◈</span> Binary Analysis Lab</h2>
+                <p>Inspect PE/ELF headers, calculate entropy, and extract printable strings</p>
+            </div>
+            <div class="tool-container">
+                <div class="binary-layout">
+                    <div class="file-drop-zone" id="binary-drop-zone">
+                        <div class="drop-icon">💻</div>
+                        <p>Drop a PE/ELF binary here or click to browse</p>
+                        <input type="file" id="binary-file-input" hidden>
+                        <span class="drop-hint">All parsing happens locally. Large binaries may take a few seconds.</span>
+                    </div>
+
+                    <div class="terminal-panel binary-panel">
+                        <h3>Summary</h3>
+                        <div class="binary-stats">
+                            <div><span>Type:</span><strong id="binary-type">-</strong></div>
+                            <div><span>Size:</span><strong id="binary-size">-</strong></div>
+                            <div><span>Entry Point:</span><strong id="binary-entry">-</strong></div>
+                            <div><span>Entropy:</span><strong id="binary-entropy">-</strong></div>
+                        </div>
+                        <div class="binary-sections">
+                            <label>Sections</label>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Virtual Size</th>
+                                        <th>Raw Size</th>
+                                        <th>Flags</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="binary-sections-table">
+                                    <tr><td colspan="4">No file loaded.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="terminal-panel binary-panel">
+                        <h3>Extracted Strings (min 4 chars)</h3>
+                        <div id="binary-strings-list" class="strings-list">
+                            Drop a binary above to extract printable strings.
+                        </div>
                     </div>
                 </div>
             </div>
