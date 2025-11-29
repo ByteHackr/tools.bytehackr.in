@@ -119,6 +119,20 @@ tools.bytehackr.in/
 - Custom MD5 implementation (included)
 - Web Crypto API (built into browsers)
 
+## 🧪 Testing
+
+End-to-end tests cover every major tool (hashing, JWT, regex, converters, hex viewer, checksum) using Playwright + Chromium.
+
+### Run the suite
+
+```bash
+npm install
+npx playwright install chromium   # first time only
+npm test
+```
+
+The tests live in `tests/e2e/bytehackr.spec.ts` and use fixtures in `tests/fixtures/`.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to:

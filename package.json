@@ -1,0 +1,23 @@
+{
+  "name": "tools.bytehackr.in",
+  "version": "1.0.0",
+  "description": "A comprehensive, client-side security toolkit for hackers, pentesters, and developers. All processing happens entirely in your browser - no data is ever sent to external servers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ByteHackr/tools.bytehackr.in.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ByteHackr/tools.bytehackr.in/issues"
+  },
+  "homepage": "https://github.com/ByteHackr/tools.bytehackr.in#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}
